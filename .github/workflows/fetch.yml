@@ -1,0 +1,23 @@
+name: 官网通知自动抓取
+
+on:
+  schedule:
+    - cron: '0 0 * * *'        # 每天 8:00（北京时间）
+  workflow_dispatch: {}        # 支持手动运行（第 7 步用）
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python fetch.py
+      - name: 提交生成的 JSON
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ip-notice.json
+          git diff --cached --quiet || git commit -m "自动更新通知 $(date -u +%Y-%m-%d)"
+          git push
